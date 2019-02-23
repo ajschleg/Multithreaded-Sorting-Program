@@ -1,12 +1,18 @@
 #include <pthread.h>
 #include <stdio.h>
 
+#define NUM_THREADS 2
+
 int sum; /* this data is shared by the thread(s) */
 void *runner(void *param); /* threads call this function */
 
+
 int main(int argc, char *argv[])
 {
-	pthread_t tid; /* the thread identifier */
+	int j;
+
+	/* an array of threads to be joined upon */
+	pthread_t workers[NUM_THREADS]; /* the thread identifier */
 	pthread_attr_t attr; /* set of thread attributes */
 
 	if (argc != 2) 
@@ -24,22 +30,25 @@ int main(int argc, char *argv[])
 	/* get the default attributes */
 	pthread_attr_init(&attr);
 
-	/* create the thread */
-	pthread_create(&tid, &attr,runner,argv[1]);
+	for(j = 0; j < NUM_THREADS; j++)
+	{
+		/* create the threads */
+		pthread_create(&workers[j], &attr, runner, argv[1]);
+	}
 
-	/* wait for the thread to exit */
-	pthread_join(tid,NULL);
-	printf("sum = %d\n",sum);
+	for(j = 0; j < NUM_THREADS; j++)
+	{
+		/* wait for the thread to exit */
+		pthread_join(workers[j], NULL);
+	}
+
+	printf("sum = %d\n", sum);
 }
 
 /* The thread will begin control in this function */
 void *runner(void *param)
 {
-	int i, upper = atoi(param);
-	sum = 0;
-
-	for (i = 1; i <= upper; i++)
-		sum += i;
+	sum++;
 
 	pthread_exit(0);
 }
