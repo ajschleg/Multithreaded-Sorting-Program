@@ -18,4 +18,13 @@ sorting threads. In particular, it will be necessary to identify the starting in
 from which each thread is to begin sorting. Refer to the instructions in Project
 1 for details on passing parameters to a thread.
 The parent thread will output the sorted array once all sorting threads have
-exited.
+exited.ls
+
+To compile:
+$ make
+
+To run:
+$ make run NUM = #
+
+To Clean:
+$ make clean
