@@ -4,17 +4,20 @@
 
 #define NUM_THREADS 2
 #define ARR_LEN 10
+#define HALF ARR_LEN/NUM_THREADS
 
 //int count = 10; /* this data is shared by the thread(s) */
 int num_arr[ARR_LEN];
 int sorted_arr[ARR_LEN];
+int flag = 0;
 
 void *runner(void *param); /* threads call this function */
 
 
 int main(int argc, char *argv[])
 {
-	int j;
+	int j, start_zero, start_half;
+	int *start_ptr;
 
 	/* an array of threads to be joined upon */
 	pthread_t workers[NUM_THREADS]; /* the thread identifier */
@@ -32,6 +35,8 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+
+
 	/*set array values to random numbers then print*/
 	for (int i = 0; i < ARR_LEN; ++i)
 	{
@@ -44,20 +49,37 @@ int main(int argc, char *argv[])
 	}
 	printf("\n");
 
+
+
 	/* get the default attributes */
 	pthread_attr_init(&attr);
 
 	for(j = 0; j < NUM_THREADS; j++)
 	{
+		/*calculate start and stop locations*/
+		if(flag == 0)
+		{
+			start_zero = 0;
+			flag = 1;
+			start_ptr = &start_zero;
+		}
+		else
+		{
+			start_half = HALF;
+			start_ptr = &start_half;
+		}
+
+
 		/* create the threads */
-		pthread_create(&workers[j], &attr, runner, argv[1]);
+		pthread_create(&workers[j], &attr, runner, start_ptr);
 	}
 
 	for(j = 0; j < NUM_THREADS; j++)
 	{
-		/* wait for the thread to exit */
+		/* wait for the threads to exit */
 		pthread_join(workers[j], NULL);
 	}
+
 
 	for (int i = 0; i < ARR_LEN; ++i)
 	{
@@ -69,13 +91,38 @@ int main(int argc, char *argv[])
 	Thread sorts list using bubble sort. */
 void *runner(void *param)
 {
-	for (int i = 0; i < ARR_LEN - 1; ++i)
+	int start, stop;
+	start = *(int *)param;
+	if (start == 0)
 	{
-		for (int j = 0; j < ARR_LEN - i - 1; ++j)
+		stop = HALF;
+	}
+	else
+	{
+		stop = ARR_LEN;
+	}
+
+	printf("start: %d stop: %d\n", start, stop);
+
+	printf("unsorted: ");
+	for (int i = start; i < stop; ++i)
+	{
+		printf("%d ", num_arr[i]);
+	}
+	printf("\n");
+
+
+	for (int i = start; i < stop - 1; ++i)
+	{
+		printf("Using %d\n", num_arr[i]);
+		for (int j = start; j < stop - i - 1; ++j)
 		{
+			printf("	Comparing %d against %d\n", num_arr[j], num_arr[j+1]);
 			if(num_arr[j] > num_arr[j+1])
 			{
-				 /*swap elements*/
+
+				printf("		Swapping %d and %d\n", num_arr[j], num_arr[j+1]);
+				 //swap elements
 				int temp = num_arr[j];
 				num_arr[j] = num_arr[j+1];
 				num_arr[j+1] = temp;
@@ -83,12 +130,14 @@ void *runner(void *param)
 		}
 	}
 
-	printf("Sorted array: ");
-	for (int i = 0; i < ARR_LEN; ++i)
+ 
+	printf("sorted: ");
+	for (int i = start; i < stop; ++i)
 	{
 		printf("%d ", num_arr[i]);
 	}
 	printf("\n");
+	
 
 	pthread_exit(0);
 }
