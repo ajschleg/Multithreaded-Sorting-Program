@@ -6,7 +6,7 @@ run:
 	./main $(NUM)
 
 omp:
-	gcc -pthread -o OpenMPtest OpenMPtest.c
+	gcc -pthread -fopenmp -o OpenMPtest OpenMPtest.c
 
 clean:
-	rm -rf main
+	rm -rf main OpenMPtest
